@@ -50,7 +50,7 @@ If you want to retrain the model with new data, you can use the `-t` or `--train
 python main.py -t
 ```
 
-If you want the application to learn from new data without retraining the model, you can enter the command `learn!` during the execution of the application.
+To instruct the application to retrain the model during its execution, simply type `learn!` when prompted for a question.
 
 ## Contributing
 

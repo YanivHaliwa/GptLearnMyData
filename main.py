@@ -7,7 +7,6 @@ from llama_index import GPTVectorStoreIndex, Document, SimpleDirectoryReader,Sto
 
 openai.api_key=os.environ['OPENAI_API_KEY']
   
-
 class AddingDataToGPT:
     def __init__(self, retrain=False):
         self.index = None
@@ -24,13 +23,32 @@ class AddingDataToGPT:
         document = [{"question": question, "response": response}]
         self.index = GPTVectorStoreIndex.from_documents(documents)
         self.index.storage_context.persist()
+            
+    def build_storage(self):
+        if not os.listdir(self.data_dir):
+            print("The data directory is empty. Please add data for the model to learn from.")
+            exit()
+        print("please wait...")
+        documents = CustomDirectoryReader(self.data_dir).load_data()
+        self.index = GPTVectorStoreIndex.from_documents(documents)
+        self.index.storage_context.persist()
 
     def build_storage(self):
         if not os.listdir(self.data_dir):
             print("The data directory is empty. Please add data for the model to learn from.")
             exit()
         print("please wait...")
-        documents = SimpleDirectoryReader(self.data_dir).load_data()
+        documents = []
+        for filename in os.listdir(self.data_dir):
+            if filename == ".gitignore" or filename.startswith(".~lock"):
+                 continue
+            if not filename.endswith(".doc") and not filename.endswith(".docx") and not filename.endswith(".txt") and not filename.endswith(".html"):
+                 print(f"Warning: Ignoring file \033[91m{filename}\033[0m because it does not have a supported file extension.")
+            else:
+                 print("learned:",filename)
+
+        document = SimpleDirectoryReader(os.path.join(self.data_dir)).load_data()
+        documents.extend(document)
         self.index = GPTVectorStoreIndex.from_documents(documents)
         self.index.storage_context.persist()
 
@@ -44,15 +62,15 @@ class AddingDataToGPT:
             if question.lower() == "exit":
                 break
 
-            if question.lower() == "{learn}":
+            if question.lower() == "learn!":
                 self.build_storage()
                 self.read_from_storage()
                 print("learning done")
             else:
                 self.query_engine = self.index.as_query_engine()
                 response = self.query_engine.query(question)
-                print(response)   
-
+                print(f"\033[1;32m{response}\033[0m")
+                
 def parse_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument("-t", "--train", action="store_true", help="Retrain the model")

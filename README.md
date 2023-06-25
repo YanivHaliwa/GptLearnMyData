@@ -28,6 +28,11 @@ Replace `'your-api-key'` with your actual OpenAI API key.
 ## Getting Started
 
 ### Usage
+ 
+```
+git clone https://github.com/YanivHaliwa/GptLeanMyData.git
+cd GptLeanMyData
+```
 
 To use the application, you need to provide data for the model to learn from. This data should be placed in the `data` directory. The application will ignore any files that do not have a .doc, .docx, .txt, or .html extension.
 

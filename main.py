@@ -4,9 +4,40 @@ import openai
 import os
 import argparse
 from llama_index import GPTVectorStoreIndex, Document, SimpleDirectoryReader,StorageContext,load_index_from_storage
+import requests
+from bs4 import BeautifulSoup
+import re
 
 openai.api_key=os.environ['OPENAI_API_KEY']
-  
+
+def extract_text_from_url(url, output_file="output1.txt"):
+    print(url)
+    response = requests.get(url)
+
+    # Raise exception if the request was unsuccessful
+    response.raise_for_status()
+
+    soup = BeautifulSoup(response.text, 'html.parser')
+
+    # Remove script and style elements
+    for script in soup(["script", "style"]):
+        script.decompose()
+
+    # Get the text
+    text = soup.get_text()
+
+    # Break into lines and remove leading and trailing whitespaces
+    lines = (line.strip() for line in text.splitlines())
+    # Break multi-headlines into a line each
+    chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
+    # Drop blank lines
+    text = '\n'.join(chunk for chunk in chunks if chunk)
+
+    # Save the text into a file
+    with open(output_file, 'w') as f:
+        f.write(text)
+
+
 class AddingDataToGPT:
     def __init__(self, retrain=False):
         self.index = None
@@ -24,15 +55,6 @@ class AddingDataToGPT:
         self.index = GPTVectorStoreIndex.from_documents(documents)
         self.index.storage_context.persist()
             
-    def build_storage(self):
-        if not os.listdir(self.data_dir):
-            print("The data directory is empty. Please add data for the model to learn from.")
-            exit()
-        print("please wait...")
-        documents = CustomDirectoryReader(self.data_dir).load_data()
-        self.index = GPTVectorStoreIndex.from_documents(documents)
-        self.index.storage_context.persist()
-
     def build_storage(self):
         if not os.listdir(self.data_dir):
             print("The data directory is empty. Please add data for the model to learn from.")

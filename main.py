@@ -10,10 +10,34 @@ import shutil
 from datetime import datetime
 import pandas as pd
 import fnmatch
+import PyPDF2
 
 openai.api_key = os.environ['OPENAI_API_KEY']
 data_dir = "./data"
 not_learn=os.path.join(data_dir, 'not_learning')
+
+def extract_text_from_pdf(file):
+    # Check if the file is located in the data directory
+    if os.path.isfile(os.path.join(data_dir, file)) and file.endswith(".pdf"):
+        # Open the PDF file in read-binary mode
+        with open(os.path.join(data_dir, file), "rb") as pdf_file:
+            pdf_reader = PyPDF2.PdfReader(pdf_file)
+
+            text = ""
+            
+            # Extract text from each page of the PDF
+            for page_num in range(len(pdf_reader.pages)):
+                page = pdf_reader.pages[page_num]
+                text += page.extract_text()
+            
+            # Save the extracted text into a text file
+            txt_file = file.replace(".pdf", ".txt")
+            with open(os.path.join(data_dir, txt_file), "w") as txt_file:
+                txt_file.write(text)
+        
+        # Move the PDF file to the "not_learn" folder
+        os.rename(os.path.join(data_dir, file), os.path.join(not_learn, file))
+        
 
 def extract_text_from_excel(file):
     # Convert Excel file to CSV
@@ -91,15 +115,17 @@ class AddingDataToGPT:
             if os.path.isfile(os.path.join(data_dir, filename)):
                 if filename == ".gitignore" or filename.startswith(".~lock"):
                     continue
-                if filename.endswith(".xls") or filename.endswith(".xlsx"):
+                elif filename.endswith((".xls", ".xlsx")):
                     extract_text_from_excel(filename)
-                  #  print("learned:", filename)
-                
-                if not any(fnmatch.fnmatch(filename, pattern) for pattern in ["*.doc", "*.docx", "*.txt", "*.html", "*.xls", "*.xlsx", "*.csv"]):
-                    shutil.move(os.path.join(self.data_dir, filename), os.path.join(self.data_dir, "not_learning"))
-                    print(f"Warning: Ignoring file \033[91m{filename}\033[0m because it does not have a supported file extension.")
+                    print("Learned:", filename)
+                elif filename.endswith(".pdf"):
+                    extract_text_from_pdf(filename)
+                    print("Learned:", filename)
+                elif filename.endswith((".txt", ".html")):
+                    print("Learned:", filename)
                 else:
-                    print("learned:", filename)
+                    shutil.move(os.path.join(data_dir, filename), os.path.join(data_dir, "not_learn"))
+                    print(f"Warning: Ignoring file \033[91m{filename}\033[0m because it does not have a supported file extension.")
 
         document = SimpleDirectoryReader(os.path.join(self.data_dir)).load_data()
         documents.extend(document)

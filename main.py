@@ -1,12 +1,13 @@
 #!/usr/bin/python3
 import os
 import openai
-import os
+import sys
 import argparse
 from llama_index import GPTVectorStoreIndex, Document, SimpleDirectoryReader,StorageContext,load_index_from_storage
 import requests
 from bs4 import BeautifulSoup
 import re
+import shutil
 
 openai.api_key=os.environ['OPENAI_API_KEY']
 
@@ -56,18 +57,21 @@ class AddingDataToGPT:
         self.index.storage_context.persist()
             
     def build_storage(self):
-        if not os.listdir(self.data_dir):
-            print("The data directory is empty. Please add data for the model to learn from.")
-            exit()
         print("please wait...")
         documents = []
+        if not os.path.exists(os.path.join(self.data_dir, 'not_learning')):
+            os.makedirs(os.path.join(self.data_dir, 'not_learning'))
+        
         for filename in os.listdir(self.data_dir):
-            if filename == ".gitignore" or filename.startswith(".~lock"):
-                 continue
-            if not filename.endswith(".doc") and not filename.endswith(".docx") and not filename.endswith(".txt") and not filename.endswith(".html"):
-                 print(f"Warning: Ignoring file \033[91m{filename}\033[0m because it does not have a supported file extension.")
-            else:
-                 print("learned:",filename)
+            if os.path.isfile(os.path.join(self.data_dir, filename)):
+                if filename == ".gitignore" or filename.startswith(".~lock"):
+                    continue
+                if not filename.endswith((".doc", ".docx", ".txt", ".html")):
+                    shutil.move(os.path.join(self.data_dir, filename), os.path.join(self.data_dir, 'not_learning'))
+                    print(f"Warning: Ignoring file \033[91m{filename}\033[0m because it does not have a supported file extension.")
+                else:
+                    print("learned:",filename)
+                    
 
         document = SimpleDirectoryReader(os.path.join(self.data_dir)).load_data()
         documents.extend(document)
@@ -99,6 +103,11 @@ def parse_arguments():
     return parser.parse_args()
 
 def main():
+    data_dir = './data'
+    if not any(fname for fname in os.listdir(data_dir) if fname != '.gitignore' and not os.path.isdir(os.path.join(data_dir, fname))):
+        print("No files to learn from in the 'data' directory. Exiting the program.")
+        sys.exit()
+
     args = parse_arguments()
     if args.train:
         adding_data = AddingDataToGPT(retrain=True)

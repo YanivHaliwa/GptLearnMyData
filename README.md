@@ -2,6 +2,10 @@
 
 This application is designed to train a GPT model to answer questions based on a set of data provided by the user. The application uses the GPT model from OpenAI and the Llama Index library to store and retrieve data.
 
+as for now the data accepted is: 
+Files with extensions -   .doc, .docx, .txt, .html, xls, xlsx, csv
+also accepted is -  URL of website that contain the data.
+
 ## Prerequisites
 
 Before running the application, you need to install the required Python libraries. You can do this by running the following command:
@@ -34,7 +38,7 @@ git clone https://github.com/YanivHaliwa/GptLeanMyData.git
 cd GptLeanMyData
 ```
 
-To use the application, you need to provide data for the model to learn from. This data should be placed in the `data` directory. The application will ignore any files that do not have a .doc, .docx, .txt, or .html extension.
+To use the application, you need to provide data for the model to learn from. This data should be placed in the `data` directory. The application will ignore any files that do not have supported extensions as above.
 
 Once the data is in place, you can run the application with the following command:
 

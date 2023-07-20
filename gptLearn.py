@@ -1,5 +1,4 @@
 import os
-import openai
 import sys
 import argparse
 from llama_index import GPTVectorStoreIndex, Document, SimpleDirectoryReader, StorageContext, load_index_from_storage
@@ -12,7 +11,8 @@ import pandas as pd
 import fnmatch
 import PyPDF2
 
-openai.api_key = os.environ['OPENAI_API_KEY']
+#this program can process pdf,excel,word,txt,html,csv, url, 
+
 data_dir = "./data"
 not_learn=os.path.join(data_dir, 'not_learning')
 

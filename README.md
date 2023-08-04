@@ -43,7 +43,7 @@ To use the application, you need to provide data for the model to learn from. Th
 Once the data is in place, you can run the application with the following command:
 
 ```
-python main.py
+python gptLearn.py
 ```
 
 During the execution of the application, you can ask the GPT model questions. The model will answer based on the data it has learned.
@@ -51,7 +51,7 @@ During the execution of the application, you can ask the GPT model questions. Th
 If you want to retrain the model with new data, you can use the `-t` or `--train` argument when running the application:
 
 ```
-python main.py -t
+python gptLearn.py -t
 ```
 
 To instruct the application to retrain the model during its execution, simply type `learn!` when prompted for a question.
